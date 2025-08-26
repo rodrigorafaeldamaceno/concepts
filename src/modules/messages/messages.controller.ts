@@ -1,13 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dtos/create-message.dto';
+import { FetchMessagesParamsDto } from './dtos/fetch_messages_params.dto';
 
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly service: MessagesService) { }
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query() query: FetchMessagesParamsDto) {
+    return this.service.findAll(query);
   }
 
   @Get(':id')

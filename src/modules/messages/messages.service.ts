@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMessageDto } from './dtos/create-message.dto';
+import { FetchMessagesParamsDto } from './dtos/fetch_messages_params.dto';
 
 @Injectable()
 export class MessagesService {
-  findAll() {
+  findAll(query: FetchMessagesParamsDto) {
     return [
       {
         id: 1,
@@ -17,11 +18,11 @@ export class MessagesService {
   }
 
   findOne(id: number) {
-    return this.findAll().find((message) => message.id === id);
+    return this.findAll({}).find((message) => message.id === id);
   }
 
   create(content: CreateMessageDto) {
-    const messages = this.findAll();
+    const messages = this.findAll({});
     const newMessage = {
       id: messages.length + 1,
       content: content.content,
@@ -31,7 +32,7 @@ export class MessagesService {
   }
 
   update(id: number, content: CreateMessageDto) {
-    const messages = this.findAll();
+    const messages = this.findAll({});
     const messageIndex = messages.findIndex((message) => message.id === id);
     if (messageIndex !== -1) {
       messages[messageIndex].content = content.content;
@@ -41,7 +42,7 @@ export class MessagesService {
   }
 
   remove(id: number) {
-    const messages = this.findAll();
+    const messages = this.findAll({});
     const messageIndex = messages.findIndex((message) => message.id === id);
 
     if (messageIndex === -1) {
