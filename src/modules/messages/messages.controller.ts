@@ -5,7 +5,7 @@ import { FetchMessagesParamsDto } from './dtos/fetch_messages_params.dto';
 
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly service: MessagesService) { }
+  constructor(private readonly service: MessagesService) {}
   @Get()
   findAll(@Query() query: FetchMessagesParamsDto) {
     return this.service.findAll(query);
