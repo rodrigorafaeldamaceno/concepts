@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMessageDto } from './dtos/create-message.dto';
 
 @Injectable()
@@ -38,5 +38,21 @@ export class MessagesService {
       return messages[messageIndex];
     }
     return null;
+  }
+
+  remove(id: number) {
+    const messages = this.findAll();
+    const messageIndex = messages.findIndex((message) => message.id === id);
+
+    if (messageIndex === -1) {
+      throw new NotFoundException(`Message with id ${id} not found`);
+    }
+
+    messages.splice(messageIndex, 1);
+
+    return {
+      success: true,
+      message: `Message with id ${id} has been successfully deleted`,
+    };
   }
 }
