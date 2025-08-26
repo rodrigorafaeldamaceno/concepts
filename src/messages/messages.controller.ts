@@ -3,7 +3,6 @@ import { MessagesService } from './messages.service';
 
 @Controller('messages')
 export class MessagesController {
-
   constructor(private readonly service: MessagesService) {}
   @Get()
   findAll() {
