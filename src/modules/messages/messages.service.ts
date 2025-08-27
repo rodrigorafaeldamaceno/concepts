@@ -3,27 +3,38 @@ import { CreateMessageDto } from './dtos/create-message.dto';
 import { FetchMessagesDto } from './dtos/fetch-messages.dto';
 import { MessageEntity } from './entities/message.entity';
 import { UpdateMessageDto } from './dtos/update-message.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MessagesService {
-  private messages: MessageEntity[] = [
-    {
-      id: 1,
-      content: 'Hello World',
-      from: 'User1',
-      to: 'User2',
-      read: false,
-      date: new Date(),
-    },
-  ];
+  constructor(
+    @InjectRepository(MessageEntity)
+    private readonly repository: Repository<MessageEntity>,
+  ) {}
 
-  findAll(query: FetchMessagesDto) {
-    console.log(query);
-    return this.messages;
+  async findAll(query: FetchMessagesDto) {
+    const { limit, page, search, read } = query;
+
+    const qb = this.repository.createQueryBuilder('message');
+
+    if (search) {
+      qb.andWhere('message.content ILIKE :search', { search: `%${search}%` });
+    }
+
+    if (read !== undefined) {
+      qb.andWhere('message.read = :read', { read });
+    }
+
+    qb.skip((page - 1) * limit).take(limit);
+
+    const messages = await qb.getMany();
+
+    return messages;
   }
 
-  findOne(id: number) {
-    const message = this.findAll({}).find((message) => message.id === id);
+  async findOne(id: number) {
+    const message = await this.repository.findOne({ where: { id } });
 
     if (!message) {
       throw new NotFoundException(`Message with id ${id} not found`);
@@ -32,42 +43,36 @@ export class MessagesService {
     return message;
   }
 
-  create(content: CreateMessageDto) {
-    const messages = this.findAll({});
-    const newMessage: MessageEntity = {
-      id: messages.length + 1,
-      ...content,
-      read: false,
-      date: new Date(),
-    };
-    messages.push(newMessage);
+  async create(content: CreateMessageDto) {
+    const newMessage = this.repository.create(content);
+    await this.repository.save(newMessage);
     return newMessage;
   }
 
-  update(id: number, data: UpdateMessageDto) {
-    const messages = this.findAll({});
-    const messageIndex = messages.findIndex((message) => message.id === id);
-    if (messageIndex === -1) {
+  async update(id: number, data: UpdateMessageDto) {
+    const partialUpdateDto = {
+      read: data.read,
+      content: data.content,
+    };
+
+    const message = await this.repository.preload({ id, ...partialUpdateDto });
+
+    if (!message) {
       throw new NotFoundException(`Message with id ${id} not found`);
     }
-    const updatedMessage: MessageEntity = {
-      ...messages[messageIndex],
-      ...data,
-    };
-    messages[messageIndex] = updatedMessage;
-    return updatedMessage;
+
+    await this.repository.save(message);
+    return message;
   }
 
-  remove(id: number) {
-    const messages = this.findAll({});
-    const messageIndex = messages.findIndex((message) => message.id === id);
+  async remove(id: number) {
+    const message = await this.findOne(id);
 
-    if (messageIndex === -1) {
+    if (!message) {
       throw new NotFoundException(`Message with id ${id} not found`);
     }
 
-    messages.splice(messageIndex, 1);
-
+    await this.repository.remove(message);
     return {
       success: true,
       message: `Message with id ${id} has been successfully deleted`,

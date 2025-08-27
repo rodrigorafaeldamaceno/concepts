@@ -11,16 +11,20 @@ import {
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dtos/create-message.dto';
-import { FetchMessagesDto } from './dtos/fetch-messages.dto';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { MessageEntity } from './entities/message.entity';
 import { UpdateMessageDto } from './dtos/update-message.dto';
+import { FetchMessagesDto } from './dtos/fetch-messages.dto';
 
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly service: MessagesService) {}
   @Get()
   @ApiResponse({ status: 200, description: 'List all messages', type: [MessageEntity] })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'read', required: false, type: Boolean })
   findAll(@Query() query: FetchMessagesDto) {
     return this.service.findAll(query);
   }

@@ -31,4 +31,10 @@ export class CreateMessageDto {
   @MinLength(5)
   @MaxLength(50)
   readonly to: string;
+
+  @ApiProperty({
+    description: 'Indicates whether the message has been read',
+    example: false,
+  })
+  readonly read: boolean;
 }
