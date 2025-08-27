@@ -4,6 +4,7 @@ import { CreateMessageDto } from './dtos/create-message.dto';
 import { FetchMessagesDto } from './dtos/fetch-messages.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { MessageEntity } from './entities/message.entity';
+import { UpdateMessageDto } from './dtos/update-message.dto';
 
 @Controller('messages')
 export class MessagesController {
@@ -26,7 +27,8 @@ export class MessagesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: CreateMessageDto) {
+  @ApiResponse({ status: 200, description: 'Update a message', type: MessageEntity })
+  update(@Param('id') id: string, @Body() body: UpdateMessageDto) {
     return this.service.update(+id, body);
   }
 
