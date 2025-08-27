@@ -2,6 +2,7 @@
   "editor.tabSize": 2,
   "editor.formatOnSaveMode": "file", // required to format on save
   "files.autoSave": "onFocusChange", // optional but recommended
+  "editor.autoIndent": "full",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   }

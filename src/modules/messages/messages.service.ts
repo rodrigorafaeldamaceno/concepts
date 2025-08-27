@@ -1,31 +1,43 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMessageDto } from './dtos/create-message.dto';
-import { FetchMessagesParamsDto } from './dtos/fetch_messages_params.dto';
+import { FetchMessagesDto } from './dtos/fetch-messages.dto';
+import { MessageEntity } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
-  findAll(query: FetchMessagesParamsDto) {
-    return [
-      {
-        id: 1,
-        content: 'Hello, world!',
-      },
-      {
-        id: 2,
-        content: 'Hello, NestJS!',
-      },
-    ];
+  private messages: MessageEntity[] = [
+    {
+      id: 1,
+      content: 'Hello World',
+      from: 'User1',
+      to: 'User2',
+      read: false,
+      date: new Date(),
+    },
+  ];
+
+  findAll(query: FetchMessagesDto) {
+    console.log(query);
+    return this.messages;
   }
 
   findOne(id: number) {
-    return this.findAll({}).find((message) => message.id === id);
+    const message = this.findAll({}).find((message) => message.id === id);
+
+    if (!message) {
+      throw new NotFoundException(`Message with id ${id} not found`);
+    }
+
+    return message;
   }
 
   create(content: CreateMessageDto) {
     const messages = this.findAll({});
-    const newMessage = {
+    const newMessage: MessageEntity = {
       id: messages.length + 1,
-      content: content.content,
+      ...content,
+      read: false,
+      date: new Date(),
     };
     messages.push(newMessage);
     return newMessage;
@@ -35,8 +47,12 @@ export class MessagesService {
     const messages = this.findAll({});
     const messageIndex = messages.findIndex((message) => message.id === id);
     if (messageIndex !== -1) {
-      messages[messageIndex].content = content.content;
-      return messages[messageIndex];
+      const updatedMessage: MessageEntity = {
+        ...messages[messageIndex],
+        content: content.content,
+      };
+      messages[messageIndex] = updatedMessage;
+      return updatedMessage;
     }
     return null;
   }
